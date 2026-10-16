@@ -7,23 +7,24 @@ files are adapters rather than independent copies to maintain manually.
 
 ## Install in a project
 
-Install both repositories as project submodules:
+The normal installation is a nested submodule of the canonical `agents` repository:
 
 ```bash
 git submodule add https://github.com/Dolan001/agents.git .agents
-git submodule add https://github.com/Dolan001/agent-bridge.git .agent-bridge
+git -C .agents submodule update --init agent-bridge
 ```
 
 Codex is the default when no adapter has been selected. Select another provider with one command:
 
 ```bash
-./.agent-bridge/use-adapter claude
-./.agent-bridge/use-adapter opencode
-./.agent-bridge/use-adapter gemini
-./.agent-bridge/use-adapter codex
+./.agents/use-adapter claude
+./.agents/use-adapter opencode
+./.agents/use-adapter gemini
+./.agents/use-adapter codex
 ```
 
-Running `./.agent-bridge/use-adapter` without a provider also selects Codex.
+Running `./.agents/use-adapter` without a provider also selects Codex. The wrapper delegates to this
+repository at `.agents/agent-bridge` while keeping the user-facing command stable.
 
 The bridge validates that the selected provider executable is installed, generates its native
 project files, and stores the local selection in the gitignored
@@ -46,7 +47,7 @@ locally. Existing unrelated provider configuration is preserved and extended.
 The `agents` workflow refreshes the active projection before launching a provider:
 
 ```bash
-./.agent-bridge/use-adapter claude \
+./.agents/agent-bridge/use-adapter claude \
   --project . \
   --agents-root ./.agents \
   --sync-only
