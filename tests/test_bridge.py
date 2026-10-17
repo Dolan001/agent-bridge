@@ -71,6 +71,23 @@ def test_opencode_and_gemini_native_formats(tmp_path: Path) -> None:
     assert "{{args}}" in (project / ".gemini/commands/start-build.toml").read_text(encoding="utf-8")
 
 
+def test_cursor_native_projection(tmp_path: Path) -> None:
+    root = make_agents_root(tmp_path)
+    project = tmp_path / "project"
+    project.mkdir()
+
+    sync_provider(project, "cursor", agents_root=root)
+
+    assert (project / ".cursor/agents/reviewer.md").is_file()
+    assert (project / ".cursor/skills/start-build/SKILL.md").is_file()
+    assert "$ARGUMENTS" in (project / ".cursor/commands/start-build.md").read_text(
+        encoding="utf-8"
+    )
+    rule = (project / ".cursor/rules/agent-workflow.mdc").read_text(encoding="utf-8")
+    assert "alwaysApply: true" in rule
+    assert "hooks/pre-task.md" in rule
+
+
 def test_sync_only_does_not_change_selection(tmp_path: Path) -> None:
     root = make_agents_root(tmp_path)
     project = tmp_path / "project"

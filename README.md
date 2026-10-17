@@ -1,7 +1,7 @@
 # Agent Bridge
 
 `agent-bridge` projects a canonical `.agents` workflow repository into the native project
-structures used by Codex, Claude Code, OpenCode, and Gemini CLI. The canonical agents, skills,
+structures used by Codex, Claude Code, OpenCode, Gemini CLI, and Cursor. The canonical agents, skills,
 commands, rules, policies, and lifecycle instructions remain owned by `.agents`; generated provider
 files are adapters rather than independent copies to maintain manually.
 
@@ -20,6 +20,7 @@ Codex is the default when no adapter has been selected. Select another provider 
 ./.agents/use-adapter claude
 ./.agents/use-adapter opencode
 ./.agents/use-adapter gemini
+./.agents/use-adapter cursor
 ./.agents/use-adapter codex
 ```
 
@@ -38,6 +39,7 @@ project files, and stores the local selection in the gitignored
 | Claude Code | `.claude/agents`, `.claude/skills`, `.claude/commands`, `CLAUDE.md` |
 | OpenCode | `.opencode/agents`, `.opencode/skills`, `.opencode/commands`, `opencode.json`, `AGENTS.md` |
 | Gemini CLI | `.gemini/agents`, `.gemini/skills`, `.gemini/commands`, `.gemini/settings.json`, `GEMINI.md` |
+| Cursor | `.cursor/agents`, `.cursor/skills`, `.cursor/commands`, `.cursor/rules`, `AGENTS.md` |
 
 Generated files are hash-tracked. The bridge refuses to overwrite a generated file that was edited
 locally. Existing unrelated provider configuration is preserved and extended.

@@ -12,8 +12,14 @@ from typing import Any
 
 from .io import read_json, write_json
 
-PROVIDERS = ("codex", "claude", "opencode", "gemini")
-EXECUTABLES = {provider: provider for provider in PROVIDERS}
+PROVIDERS = ("codex", "claude", "opencode", "gemini", "cursor")
+EXECUTABLES = {
+    "codex": ("codex",),
+    "claude": ("claude",),
+    "opencode": ("opencode",),
+    "gemini": ("gemini",),
+    "cursor": ("agent",),
+}
 SELECTION = Path(".agent-bridge-state/selected-adapter")
 MANIFEST = Path(".agent-bridge-state/generated.json")
 DEFAULT_AGENTS_DIRECTORY = ".agents"
@@ -366,6 +372,37 @@ def _sync_gemini(
     return {"agents": len(agents), "skills": len(skills), "commands": len(commands)}
 
 
+def _sync_cursor(
+    project: Path,
+    agents: dict[str, Path],
+    skills: dict[str, Path],
+    commands: dict[str, Path],
+    paths: list[str],
+) -> dict[str, int]:
+    projection = Projection(project, "cursor")
+    for name, source in agents.items():
+        projection.write(f".cursor/agents/{name}.md", source.read_bytes())
+    for name, source in skills.items():
+        projection.copy_tree(source, Path(f".cursor/skills/{name}"))
+    for name, source in commands.items():
+        description, prompt = _command_prompt(project, source, "cursor")
+        projection.write(
+            f".cursor/commands/{name}.md",
+            f"---\ndescription: {description}\n---\n\n{prompt}\n\nArguments: $ARGUMENTS\n",
+        )
+    references = "\n".join(f"- `{path}`" for path in paths)
+    projection.write(
+        ".cursor/rules/agent-workflow.mdc",
+        "---\ndescription: Shared agent workflow rules\nalwaysApply: true\n---\n\n"
+        "The `.agents` submodule is the canonical workflow source. Read and follow the "
+        "applicable files below. Generated Cursor files are adapters, not independent "
+        f"sources of truth.\n\n{references}\n",
+    )
+    projection.finish()
+    _managed_markdown(project / "AGENTS.md", _project_agents_body(paths))
+    return {"agents": len(agents), "skills": len(skills), "commands": len(commands)}
+
+
 def sync_provider(
     project: Path, provider: str, *, agents_root: Path | None = None
 ) -> dict[str, Any]:
@@ -385,6 +422,7 @@ def sync_provider(
         "claude": _sync_claude,
         "opencode": _sync_opencode,
         "gemini": _sync_gemini,
+        "cursor": _sync_cursor,
     }
     counts = synchronizers[provider](project, agents, skills, commands, paths)
     return {"provider": provider, "agents_root": str(repository), **counts}
@@ -400,9 +438,11 @@ def use_provider(
 ) -> dict[str, Any]:
     if provider not in PROVIDERS:
         raise RuntimeError(f"unsupported adapter: {provider}")
-    resolved = shutil.which(EXECUTABLES[provider])
+    executable_names = EXECUTABLES[provider]
+    resolved = next((shutil.which(name) for name in executable_names if shutil.which(name)), None)
     if check_executable and not resolved:
-        raise RuntimeError(f"{provider} adapter is unavailable; install `{provider}` first")
+        expected = executable_names[0]
+        raise RuntimeError(f"{provider} adapter is unavailable; install `{expected}` first")
     project = project.expanduser().resolve()
     result = sync_provider(project, provider, agents_root=agents_root)
     selection = project / SELECTION
