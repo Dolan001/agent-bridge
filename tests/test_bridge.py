@@ -52,6 +52,7 @@ def test_claude_projection_and_selection(tmp_path: Path) -> None:
     assert (project / ".claude/skills/start-build/SKILL.md").is_file()
     assert (project / ".claude/commands/start-build.md").is_file()
     assert "hooks/pre-task.md" in (project / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "it executes lifecycle hooks" in (project / "CLAUDE.md").read_text(encoding="utf-8")
     assert ".agent-bridge-state/" in (project / ".gitignore").read_text(encoding="utf-8")
 
 
@@ -69,6 +70,9 @@ def test_opencode_and_gemini_native_formats(tmp_path: Path) -> None:
     assert '"instructions"' in (project / "opencode.json").read_text(encoding="utf-8")
     assert "kind: local" in (project / ".gemini/agents/reviewer.md").read_text(encoding="utf-8")
     assert "{{args}}" in (project / ".gemini/commands/start-build.toml").read_text(encoding="utf-8")
+    instructions = (project / "AGENTS.md").read_text(encoding="utf-8")
+    assert "workflow CLI owns lifecycle hooks" in instructions
+    assert "Run build workflows through" in (project / "GEMINI.md").read_text(encoding="utf-8")
 
 
 def test_cursor_native_projection(tmp_path: Path) -> None:
@@ -86,6 +90,7 @@ def test_cursor_native_projection(tmp_path: Path) -> None:
     rule = (project / ".cursor/rules/agent-workflow.mdc").read_text(encoding="utf-8")
     assert "alwaysApply: true" in rule
     assert "hooks/pre-task.md" in rule
+    assert "executes lifecycle hooks" in rule
 
 
 def test_sync_only_does_not_change_selection(tmp_path: Path) -> None:

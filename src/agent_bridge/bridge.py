@@ -244,7 +244,10 @@ def _project_agents_body(paths: list[str]) -> str:
         "# Shared agent workflow\n\n"
         "The `.agents` submodule is the canonical workflow source. Read and follow the "
         "applicable files below before doing workflow work. Provider-generated files are adapters, "
-        "not independent sources of truth.\n\n"
+        "not independent sources of truth. For build workflows, invoke `./.agents/bin/ai` "
+        "through the generated command or skill. The workflow CLI owns lifecycle hooks, "
+        "evidence gates, checkpoints, and Git boundaries; reading hook Markdown in a direct "
+        "provider chat does not execute those controls.\n\n"
         f"{references}"
     )
 
@@ -280,7 +283,14 @@ def _sync_claude(
         )
     projection.finish()
     imports = "\n".join(f"@./{path}" for path in paths)
-    _managed_markdown(project / "CLAUDE.md", f"# Shared agent workflow\n\n{imports}")
+    _managed_markdown(
+        project / "CLAUDE.md",
+        "# Shared agent workflow\n\n"
+        "Run build workflows through `./.agents/bin/ai`; it executes lifecycle hooks, "
+        "evidence gates, checkpoints, and Git boundaries. Direct Claude chat does not "
+        "execute those controls merely by reading hook instructions.\n\n"
+        f"{imports}",
+    )
     return {"agents": len(agents), "skills": len(skills), "commands": len(commands)}
 
 
@@ -368,7 +378,14 @@ def _sync_gemini(
             names.append(name)
     write_json(settings_path, settings)
     imports = "\n".join(f"@./{path}" for path in paths)
-    _managed_markdown(project / "GEMINI.md", f"# Shared agent workflow\n\n{imports}")
+    _managed_markdown(
+        project / "GEMINI.md",
+        "# Shared agent workflow\n\n"
+        "Run build workflows through `./.agents/bin/ai`; it executes lifecycle hooks, "
+        "evidence gates, checkpoints, and Git boundaries. Direct Gemini chat does not "
+        "execute those controls merely by reading hook instructions.\n\n"
+        f"{imports}",
+    )
     return {"agents": len(agents), "skills": len(skills), "commands": len(commands)}
 
 
@@ -395,7 +412,9 @@ def _sync_cursor(
         ".cursor/rules/agent-workflow.mdc",
         "---\ndescription: Shared agent workflow rules\nalwaysApply: true\n---\n\n"
         "The `.agents` submodule is the canonical workflow source. Read and follow the "
-        "applicable files below. Generated Cursor files are adapters, not independent "
+        "applicable files below. Run build workflows through `./.agents/bin/ai`; it "
+        "executes lifecycle hooks, evidence gates, checkpoints, and Git boundaries. "
+        "Generated Cursor files are adapters, not independent "
         f"sources of truth.\n\n{references}\n",
     )
     projection.finish()

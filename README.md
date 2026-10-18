@@ -44,6 +44,12 @@ project files, and stores the local selection in the gitignored
 Generated files are hash-tracked. The bridge refuses to overwrite a generated file that was edited
 locally. Existing unrelated provider configuration is preserved and extended.
 
+Lifecycle hooks are **workflow controls**, not provider-native event hooks. The generated
+instructions point to their canonical Markdown, but the actual pre-task, verification, failure,
+and Git boundaries run when a workflow command invokes `./.agents/bin/ai`. A free-form conversation
+in Claude, OpenCode, Gemini, Cursor, or Codex does not execute those lifecycle controls by itself.
+Use the generated command/skill or the CLI for controlled builds.
+
 ## Synchronization contract
 
 The `agents` workflow refreshes the active projection before launching a provider:
